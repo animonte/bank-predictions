@@ -2,6 +2,12 @@
 import pandas as pd 
 import numpy as np
 from datasets import load_dataset
+from sklearn.linear_model import LogisticRegression 
+from sklearn.model_selection import KFold
+from sklearn.model_selection import cross_val_score
+from sklearn import metrics
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix
 
 # df = pd.DataFrame(dataset.data, columns=dataset.feature_names)
 # df['target'] = pd.Series(dataset.target)
@@ -55,6 +61,27 @@ variables_outlier = ['Age','Tenure']
 for col in variables_outlier:
     df[col] = imputar_outliers(df, col)
 
-    print(df)
+    #print(df)
 
 # Fin Imputación de outliers
+
+# Algoritmo Regresión Logística para modelo predictivo
+
+# Variables incluidas en el modelo
+pred_labels = ['CreditScore', 'Age', 'Balance', 'EstimatedSalary']
+
+X = df[pred_labels]
+y = df['Exited']
+
+# Subdividimos el dataset
+kfold = KFold(n_splits=3)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+
+# Entrenamos y testeamos
+model_logistic = LogisticRegression()
+model_logistic.fit(X_train,y_train)
+predicted = model_logistic.predict(X_test)
+
+# Hacemos las predicciones con los datos en test
+result_logistic_score = cross_val_score(model_logistic, X, y, cv=kfold)
+print("SCORE: ", result_logistic_score.mean())
