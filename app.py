@@ -1,4 +1,4 @@
-# import gradio as gr
+import gradio as gr
 import pandas as pd 
 import numpy as np
 from datasets import load_dataset
@@ -8,18 +8,11 @@ from sklearn.model_selection import cross_val_score
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
+from sklearn import tree
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import recall_score
+from sklearn.naive_bayes import MultinomialNB
 
-# df = pd.DataFrame(dataset.data, columns=dataset.feature_names)
-# df['target'] = pd.Series(dataset.target)
-
-# print(df)
-
-# def greet(name):
-#     return "Hello " + name
-
-# demo = gr.Interface(fn=greet, inputs="text", outputs="text")
-
-# demo.launch()
 
 # Lectura del CSV desde un data set
 dataset = load_dataset("animonte/bank-state-data")
@@ -77,11 +70,41 @@ y = df['Exited']
 kfold = KFold(n_splits=3)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
 
-# Entrenamos y testeamos
-model_logistic = LogisticRegression()
-model_logistic.fit(X_train,y_train)
-predicted = model_logistic.predict(X_test)
+# Modelo Árbol de Decicisón
+modelo_ajusta_train = tree.DecisionTreeClassifier(max_depth = 4, criterion = 'gini').fit(X_train, y_train)
+modelo_entrenado = modelo_ajusta_train.predict_proba(X_test)
 
-# Hacemos las predicciones con los datos en test
-result_logistic_score = cross_val_score(model_logistic, X, y, cv=kfold)
-print("SCORE: ", result_logistic_score.mean())
+# Modelo Naive Bayes
+#Creamos un objeto de Naive Bayes Multinomial
+clf = MultinomialNB()
+
+#Entrenamos el modelo con los datos de entrenamiento
+clf.fit(X_train,y_train)
+
+# Interfaz grafica
+def predict(Score, Age, Balance, Salary):
+    
+    inputs = [Score, Age, Balance, Salary]
+
+    probabilidad_de_que_sea_1 = modelo_ajusta_train.predict_proba([inputs])[0][1]
+
+    if probabilidad_de_que_sea_1 > 0.08:
+       prediccion_arbol = "Abandona el banco"
+    else:
+        prediccion_arbol = "Se queda en el banco."
+
+    predicciones_naives = clf.predict([inputs])
+
+    if predicciones_naives == 0:
+        resultado_naives = "Se queda en el banco."
+    else:
+        resultado_naives = "Abandona el banco"
+
+    return prediccion_arbol, resultado_naives
+
+demo = gr.Interface(
+    fn=predict, 
+    inputs=[gr.Slider(350, 850), "number","number","number"], 
+    outputs=["text","text"])
+
+demo.launch()
