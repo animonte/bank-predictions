@@ -1,4 +1,5 @@
 import gradio as gr
+from gradio import components
 import pandas as pd 
 import numpy as np
 from datasets import load_dataset
@@ -76,10 +77,10 @@ modelo_entrenado = modelo_ajusta_train.predict_proba(X_test)
 
 # Modelo Naive Bayes
 #Creamos un objeto de Naive Bayes Multinomial
-clf = MultinomialNB()
+modelo_naives = MultinomialNB()
 
 #Entrenamos el modelo con los datos de entrenamiento
-clf.fit(X_train,y_train)
+modelo_naives.fit(X_train,y_train)
 
 # Interfaz grafica
 def predict(Score, Age, Balance, Salary):
@@ -93,7 +94,7 @@ def predict(Score, Age, Balance, Salary):
     else:
         prediccion_arbol = "Se queda en el banco."
 
-    predicciones_naives = clf.predict([inputs])
+    predicciones_naives = modelo_naives.predict([inputs])
 
     if predicciones_naives == 0:
         resultado_naives = "Se queda en el banco."
@@ -102,9 +103,15 @@ def predict(Score, Age, Balance, Salary):
 
     return prediccion_arbol, resultado_naives
 
+output_tree = components.Textbox(label='Prueba con el modelo Tree con una sensibilidad del 0.08')
+output_naives = components.Textbox(label='Prueba con el modelo Naives')
+
+
 demo = gr.Interface(
     fn=predict, 
     inputs=[gr.Slider(350, 850), "number","number","number"], 
-    outputs=["text","text"])
+    outputs=[output_tree, output_naives],
+    allow_flagging="never"
+    )
 
 demo.launch()
