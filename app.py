@@ -103,8 +103,8 @@ def predict(Score, Age, Balance, Salary):
 
     return prediccion_arbol, resultado_naives
 
-output_tree = components.Textbox(label='Prueba con el modelo Tree con una sensibilidad del 0.08')
-output_naives = components.Textbox(label='Prueba con el modelo Naives')
+output_tree = components.Textbox(label='Resultado con el modelo Tree con una sensibilidad del 0.08')
+output_naives = components.Textbox(label='Resultado con el modelo Naives')
 
 
 demo = gr.Interface(
